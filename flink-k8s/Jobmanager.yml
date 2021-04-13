@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-jobmanager
+  labels:
+    app: flink
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flink
+      role: jobmanager
+  template:
+    metadata:
+      labels:
+        app: flink
+        role: jobmanager
+    spec:
+      nodeSelector:
+        lrd-node-type: bigdata
+      containers:
+        - name: flink
+          image: registry.cn-shanghai.aliyuncs.com/zhangdongsheng/flink-k8s
+          args: ["jobmanager"]
+          ports:
+            - name: web-port
+              containerPort: 8081
+            - name: metrics
+              containerPort: 8989
+          volumeMounts:
+            - name: flink-config-volume
+              mountPath: /flink-1.7.2/conf
+      volumes:
+        - name: flink-config-volume
+          configMap:
+            name: flink-config

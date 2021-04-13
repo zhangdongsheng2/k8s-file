@@ -1,0 +1,7 @@
+在slave  登陆mysql 后执行 
+change master to master_host='10.10.202.140',master_user='root',master_password='sddt8888'
+start slave;
+
+创建用户赋予最高权限
+grant all privileges on *.* to sddt@'%' identified by 'sddt8888';
+flush privileges ;

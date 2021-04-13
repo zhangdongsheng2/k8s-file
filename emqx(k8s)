@@ -1,0 +1,52 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: emqx
+  namespace: lrd-bigdata
+  labels:
+    k8s-app: emqx
+  annotations:
+    deployment.kubernetes.io/revision: '1'  
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      k8s-app: emqx
+  template:
+    metadata:
+      name: emqx      
+      labels:
+        k8s-app: emqx
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: emqx
+          image: 'emqx/emqx:v3.1.0'
+          ports:
+            - name: emqx-dashboard
+              containerPort: 18083
+            - name: emqx-http
+              containerPort: 8083
+            - name: emqx-mqtt
+              containerPort: 1883
+          env:
+            - name: EMQX_CLUSTER__DISCOVERY
+              value: k8s
+            - name: EMQX_NAME
+              value: emqx
+            - name: EMQX_CLUSTER__K8S__APISERVER
+              value: http://192.168.188.34:8080
+            - name: EMQX_CLUSTER__K8S__NAMESPACE
+              value: lrd-bigdata
+            - name: EMQX_CLUSTER__K8S__SERVICE_NAME
+              value: emqx
+            - name: EMQX_CLUSTER__K8S__ADDRESS_TYPE
+              value: ip
+            - name: EMQX_CLUSTER__K8S__APP_NAME
+              value: emqx
+          tty: true
+          imagePullPolicy: IfNotPresent 
+      nodeSelector:
+        lrd-node-type: bigdata
+      imagePullSecrets:
+        - name: registry-aliyun

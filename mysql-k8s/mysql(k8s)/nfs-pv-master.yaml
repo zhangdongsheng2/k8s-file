@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-nfs-mysql-master
+  namespace: lrd-bigdata
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    path: /home/data/mysql_master
+    server: 192.168.188.81
+  persistentVolumeReclaimPolicy: Recycle
+
+
+# cat nfs-pvc-master.yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pv-nfs-mysql-master
+  namespace: lrd-bigdata
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

@@ -1,0 +1,15 @@
+FROM centos:centos7
+MAINTAINER zds
+RUN yum install java-1.8.0-openjdk -y
+ARG FLINK_VERSION=1.8.1
+ARG SCALA_VERSION=2.12
+ARG FLINK_TAR_NAME=flink-${FLINK_VERSION}-bin-hadoop26-scala_${SCALA_VERSION}.tgz
+ENV FLINK_HOME=/flink-${FLINK_VERSION}
+ADD ${FLINK_TAR_NAME} /
+
+WORKDIR $FLINK_HOME
+
+COPY run.sh /root/
+EXPOSE 8088
+VOLUME $FLINK_HOME/conf
+ENTRYPOINT ["/root/run.sh"]

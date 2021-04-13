@@ -1,0 +1,10 @@
+FROM registry.cn-shanghai.aliyuncs.com/zhangdongsheng/flink-k8s:2.0
+MAINTAINER zds
+
+WORKDIR $FLINK_HOME
+RUN rm -rf /root/run.sh
+COPY run.sh /root/
+
+ENTRYPOINT ["/root/run.sh"]
+
+#更改了run.sh 脚本, 基于之前的镜像重新生成一个, 这样不会再次下载很多东西. 速度更快. 只修改 run.sh

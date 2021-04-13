@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: kafka
+  name: kafka
+  namespace: lrd-bigdata
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 3
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: kafka
+  serviceName: kafka-headless
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      nodeSelector:
+        lrd-node-type: bigdata
+      containers:
+        - command: # 改用 30092端口 方便外部访问
+            - sh
+            - -exc
+            - |
+              unset KAFKA_PORT && \
+              export KAFKA_BROKER_ID=${HOSTNAME##*-} && \
+              export KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${HOSTNAME}.kafka-headless.lrd-bigdata.svc.cluster.local:30092 && \
+              exec /etc/confluent/docker/run
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: KAFKA_HEAP_OPTS
+              value: -Xmx4G -Xms4G
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: 10.10.13.224:2181  # k8s zookeeper  svc 地址
+            - name: KAFKA_LOG_DIRS
+              value: /opt/kafka/data/logs
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_JMX_PORT
+              value: "9999"
+            - name: KAFKA_NUM_NETWORK_THREADS
+              value: "7"
+            - name: KAFKA_NUM_IO_THREADS
+              value: "12"
+            - name: SOCKET_SEND_BUFFER_BYTES
+              value: "1024000"
+            - name: SOCKET_RECEIVE_BUFFER_BYTES
+              value: "1024000"
+
+
+          #image: confluentinc/cp-kafka:4.1.2-2
+          image: registry.cn-shanghai.aliyuncs.com/zhangdongsheng/kafka-k8s:2.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -ec
+                - /usr/bin/jps | /bin/grep -q SupportedKafka
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: kafka-broker
+          ports:
+            - containerPort: 30092
+              name: kafka
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: kafka
+            timeoutSeconds: 5
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /opt/kafka/data
+              name: datadir
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 60
+  updateStrategy:
+    type: OnDelete
+  volumeClaimTemplates:
+    - metadata:
+        name: datadir
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 50Gi
+        storageClassName: kafka-cluster
+
+
+
+      #下面这个暂时不用, 数据hostPath路径,
+      volumes:
+        - name: datadir
+          hostPath:
+            path: "/opt/kafka/data"

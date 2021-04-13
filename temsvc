@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: iothub-biz-h5
+  labels:
+    k8s-app: iothub-biz-h5
+spec:
+  clusterIP: 10.10.48.188
+  ports:
+    - name: http
+      port: 21000
+      protocol: TCP
+      targetPort: 21000
+  selector:
+    k8s-app: iothub-biz-h5-deyuan
+  type: ClusterIP
+  sessionAffinity: None
+status:
+  loadBalancer: {}
+

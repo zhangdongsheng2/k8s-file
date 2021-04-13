@@ -1,0 +1,35 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kafka-burrow
+  namespace: lrd-bigdata
+  labels:
+    k8s-app: kafka-burrow
+  annotations:
+    deployment.kubernetes.io/revision: '1'  
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: kafka-burrow
+  template:
+    metadata:
+      name: kafka-burrow      
+      labels:
+        k8s-app: kafka-burrow
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: kafka-burrow
+          image: vixns/burrow:latest
+          volumeMounts:
+            - mountPath: /etc/burrow
+              name: kafka-burrow-data
+          ports:
+            - containerPort: 8000
+      volumes:
+      - name: kafka-burrow-data
+        persistentVolumeClaim:
+          claimName: pv-nfs-kafka-burrow
+      nodeSelector:
+        kubernetes.io/hostname: node82

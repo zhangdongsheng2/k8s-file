@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: k8s-pv-es1
+spec:
+  capacity:
+    storage: 50Gi      #磁盘大小50Gi
+  accessModes:
+    - ReadWriteOnce    #单客户可读写
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: "es-data-node"
+  nfs:
+    server: 192.168.188.81
+    path: "/home/data/esdata"
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: k8s-pv-es2
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: "es-data-node"
+  nfs:
+    server: 192.168.188.82
+    path: "/home/data/esdata"

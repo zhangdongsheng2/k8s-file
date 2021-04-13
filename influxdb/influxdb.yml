@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-influxdb
+  namespace: lrd-bigdata
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      elastic-app: influxdb
+  template:
+    metadata:
+      labels:
+        elastic-app: influxdb
+    spec:
+      nodeSelector:
+        lrd-node-type: bigdata
+      containers:
+        - name: influxdb
+          image: influxdb:1.7
+          volumeMounts:
+            - name: k8s-pv-influxdb
+              mountPath: /var/lib/influxdb
+      tolerations:
+        - key: "node-role.kubernetes.io/master"
+          effect: "NoSchedule"
+      volumes:
+        - name: k8s-pv-influxdb
+          nfs:
+            path: /home/data/influxdb
+            server: 192.168.188.82
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    elastic-app: influxdb
+  name: monitoring-influxdb
+  namespace: lrd-bigdata
+spec:
+  type: NodePort
+  ports:
+    - port: 8086
+      targetPort: 8086
+      nodePort: 30003
+  selector:
+    elastic-app: influxdb
+  clusterIP: 10.10.162.99

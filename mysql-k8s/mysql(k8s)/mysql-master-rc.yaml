@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: mysql-master
+  namespace: lrd-bigdata
+  labels:
+    name: mysql-master
+spec:
+  replicas: 1
+  selector:
+    name: mysql-master
+  template:
+    metadata:
+      labels:
+        name: mysql-master
+    spec:
+      containers:
+        - name: mysql-master
+          image: 18800172152/mysql-master:sdr-2
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mysql-master-data
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "sddt8888"
+            - name: MYSQL_REPLICATION_USER
+              value: "sddt"
+            - name: MYSQL_REPLICAITON_PASSWORD
+              value: "sddt8888"
+      volumes:
+        - name: mysql-master-data
+          persistentVolumeClaim:
+            claimName: pv-nfs-mysql-master
+      nodeSelector:
+        lrd-node-type: bigdata
+

@@ -1,0 +1,30 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    elastic-app: kafka-eagle
+  name: kafka-eagle
+  namespace: lrd-bigdata
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      elastic-app: kafka-eagle
+  template:
+    metadata:
+      labels:
+        elastic-app: kafka-eagle
+    spec:
+      nodeSelector:
+        lrd-node-type: bigdata
+      containers:
+        - name: kafka-eagle
+          image: registry.cn-shanghai.aliyuncs.com/zhangdongsheng/kafka-e:2.0
+          ports:
+            - containerPort: 8048
+              protocol: TCP
+
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
